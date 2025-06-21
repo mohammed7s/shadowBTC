@@ -1,0 +1,4 @@
+# Test values for P2PK circuit
+sig = ["1", "2"]
+pubkey = ["3", "4"]
+msg_hash = "5"

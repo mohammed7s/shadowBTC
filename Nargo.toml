@@ -1,0 +1,10 @@
+[workspace]
+members = [".", "src/bitcoin"]
+
+[package]
+name = "shadowBTC"
+type = "bin"
+authors = ["mohammed7s"]
+
+[dependencies]
+bitcoin = { path = "src/bitcoin" }

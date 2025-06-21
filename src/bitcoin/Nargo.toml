@@ -1,0 +1,6 @@
+[package]
+name = "bitcoin"
+type = "lib"
+authors = ["mohammed7s"]
+
+[dependencies]
