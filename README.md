@@ -30,7 +30,7 @@ The bridge is outside of current scope. However, the bitvm2 bridge is a groth16 
         - New UTXO locked to a standard bitcoin public key (any of: P2PKH, P2PK, P2TR..etc.) in shielded state. New UTXO commitment inserted into UTXO tree. 
 
 <div align="center">
-  <img src="shadowBTC.png" alt="ShadowBTC Architecture Diagram" width="600" height="400">
+  <img src="blackShadowBTC.png" alt="ShadowBTC Architecture Diagram" width="600" height="400">
 </div>
 
 ### Specification
