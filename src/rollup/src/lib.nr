@@ -1,0 +1,123 @@
+use protocol_types::{
+    abis::{
+        append_only_tree_snapshot::AppendOnlyTreeSnapshot,
+        nullifier_leaf_preimage::NullifierLeafPreimage,
+    },
+    merkle_tree,
+};
+
+pub fn rollup_main(
+    // note hashes
+    new_note_hashes: [Field; common::MAX_NOTES_PER_ROLLUP],
+    note_hash_subtree_sibling_path: [Field; common::NOTE_HASH_SUBTREE_SIBLING_PATH_LENGTH],
+    note_hash_tree: AppendOnlyTreeSnapshot,
+    expected_new_note_hash_tree: AppendOnlyTreeSnapshot,
+    // nullifiers
+    new_nullifiers: [Field; common::MAX_NULLIFIERS_PER_ROLLUP],
+    sorted_nullifiers: [Field; common::MAX_NULLIFIERS_PER_ROLLUP],
+    sorted_nullifiers_indexes: [u32; common::MAX_NULLIFIERS_PER_ROLLUP],
+    nullifier_subtree_sibling_path: [Field; common::NULLIFIER_SUBTREE_SIBLING_PATH_LENGTH],
+    nullifier_low_leaf_preimages: [NullifierLeafPreimage; common::MAX_NOTES_PER_ROLLUP],
+    nullifier_low_leaf_membership_witnesses: [merkle_tree::MembershipWitness<common::NULLIFIER_TREE_HEIGHT>; common::MAX_NOTES_PER_ROLLUP],
+    nullifier_tree: AppendOnlyTreeSnapshot,
+    expected_new_nullifier_tree: AppendOnlyTreeSnapshot,
+) {
+    let new_note_hash_tree = compute_new_note_hash_tree_snapshot::<common::MAX_NOTES_PER_ROLLUP, common::NOTE_HASH_SUBTREE_HEIGHT, common::NOTE_HASH_SUBTREE_SIBLING_PATH_LENGTH>(
+        note_hash_tree,
+        new_note_hashes,
+        note_hash_subtree_sibling_path,
+    );
+    assert(new_note_hash_tree == expected_new_note_hash_tree, "Invalid new note hash tree");
+
+    // Safety: TODO(security): constrain this call. This is unconstrained because it's very expensive, so we mark it unconstrained while in active development
+    let new_nullifier_tree = unsafe {
+        compute_new_nullifier_tree_snapshot(
+            nullifier_tree,
+            new_nullifiers,
+            sorted_nullifiers,
+            sorted_nullifiers_indexes,
+            nullifier_subtree_sibling_path,
+            nullifier_low_leaf_preimages,
+            nullifier_low_leaf_membership_witnesses,
+        )
+    };
+    assert(new_nullifier_tree == expected_new_nullifier_tree, "Invalid new nullifier tree");
+}
+
+fn compute_new_note_hash_tree_snapshot<let LEAVES_LENGTH: u32, let SUBTREE_HEIGHT: u32, let SUBTREE_SIBLING_PATH_LENGTH: u32>(
+    tree: AppendOnlyTreeSnapshot,
+    new_leaves: [Field; LEAVES_LENGTH],
+    subtree_sibling_path: [Field; SUBTREE_SIBLING_PATH_LENGTH],
+) -> AppendOnlyTreeSnapshot {
+    assert(LEAVES_LENGTH == 1 << SUBTREE_HEIGHT as u8, "Invalid subtree height");
+    let empty_commitments_subtree_root = merkle_tree::calculate_empty_tree_root(SUBTREE_HEIGHT);
+    let commitments_tree_subroot = merkle_tree::calculate_subtree_root(new_leaves);
+
+    // TODO(security): is there a need to check if note hashes are not in the tree before inserting?
+    merkle_tree::append_only_tree::insert_subtree_to_snapshot_tree(
+        tree,
+        subtree_sibling_path,
+        empty_commitments_subtree_root,
+        commitments_tree_subroot,
+        SUBTREE_HEIGHT as u8,
+    )
+}
+
+// TODO(security): remove `unconstrained`. It's very expensive to prove in tests, so we mark it unconstrained while in active development
+unconstrained fn compute_new_nullifier_tree_snapshot(
+    tree: AppendOnlyTreeSnapshot,
+    new_nullifiers: [Field; common::MAX_NULLIFIERS_PER_ROLLUP],
+    sorted_nullifiers: [Field; common::MAX_NULLIFIERS_PER_ROLLUP],
+    sorted_nullifiers_indexes: [u32; common::MAX_NULLIFIERS_PER_ROLLUP],
+    subtree_sibling_path: [Field; common::NULLIFIER_SUBTREE_SIBLING_PATH_LENGTH],
+    nullifier_low_leaf_preimages: [NullifierLeafPreimage; common::MAX_NOTES_PER_ROLLUP],
+    nullifier_low_leaf_membership_witnesses: [merkle_tree::MembershipWitness<common::NULLIFIER_TREE_HEIGHT>; common::MAX_NOTES_PER_ROLLUP],
+) -> AppendOnlyTreeSnapshot {
+    merkle_tree::indexed_tree::batch_insert::<_, _, _, _, common::NULLIFIER_SUBTREE_HEIGHT, common::NULLIFIER_TREE_HEIGHT>(
+        tree,
+        new_nullifiers,
+        sorted_nullifiers,
+        sorted_nullifiers_indexes,
+        subtree_sibling_path,
+        nullifier_low_leaf_preimages,
+        nullifier_low_leaf_membership_witnesses,
+    )
+}
+
+
+
+// // Add tests
+// #[test]
+// fn test_rollup_library() {
+//     // Create empty trees
+//     let note_tree = create_empty_note_tree();
+//     let nullifier_tree = create_empty_nullifier_tree();
+    
+//     // Create dummy data for testing
+//     let new_note_hashes = [Field::from(1); common::MAX_NOTES_PER_ROLLUP];
+//     let note_hash_subtree_sibling_path = [Field::from(0); common::NOTE_HASH_SUBTREE_SIBLING_PATH_LENGTH];
+//     let expected_new_note_hash_tree = AppendOnlyTreeSnapshot { root: Field::from(1), next_available_leaf_index: 64 };
+    
+//     let new_nullifiers = [Field::from(2); common::MAX_NULLIFIERS_PER_ROLLUP];
+//     let sorted_nullifiers = [Field::from(2); common::MAX_NULLIFIERS_PER_ROLLUP];
+//     let sorted_nullifiers_indexes = [0u32; common::MAX_NULLIFIERS_PER_ROLLUP];
+//     let nullifier_subtree_sibling_path = [Field::from(0); common::NULLIFIER_SUBTREE_SIBLING_PATH_LENGTH];
+//     let nullifier_low_leaf_preimages = [NullifierLeafPreimage { nullifier: Field::from(0), next_nullifier: Field::from(0), next_index: 0 }; common::MAX_NOTES_PER_ROLLUP];
+//     let nullifier_low_leaf_membership_witnesses = [merkle_tree::MembershipWitness { leaf_index: 0, sibling_path: [Field::from(0); common::NULLIFIER_TREE_HEIGHT] }; common::MAX_NOTES_PER_ROLLUP];
+//     let expected_new_nullifier_tree = AppendOnlyTreeSnapshot { root: Field::from(2), next_available_leaf_index: 64 };
+    
+//     rollup_main(
+//         new_note_hashes,
+//         note_hash_subtree_sibling_path,
+//         note_tree,
+//         expected_new_note_hash_tree,
+//         new_nullifiers,
+//         sorted_nullifiers,
+//         sorted_nullifiers_indexes,
+//         nullifier_subtree_sibling_path,
+//         nullifier_low_leaf_preimages,
+//         nullifier_low_leaf_membership_witnesses,
+//         nullifier_tree,
+//         expected_new_nullifier_tree,
+//     );
+// }

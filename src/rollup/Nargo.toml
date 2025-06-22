@@ -1,0 +1,8 @@
+[package]
+name = "rollup"
+type = "lib"
+authors = ["mohammed"]
+
+[dependencies]
+protocol_types = { git = "https://github.com/AztecProtocol/aztec-packages/", tag = "v0.86.0", directory = "noir-projects/noir-protocol-circuits/crates/types" }
+common = { path = "../common" }
