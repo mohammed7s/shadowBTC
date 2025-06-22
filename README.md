@@ -1,3 +1,11 @@
+<div align="center">
+  <img src="logo.png" alt="ShadowBTC Logo" width="200" height="200">
+</div>
+<br />
+
+
+
+
 # shadowBTC 
 
 An experimental project in private Bitcoin Transactions. 
