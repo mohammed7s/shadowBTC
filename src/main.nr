@@ -1,5 +1,5 @@
 // Main function to verify P2PK scripts
-use bitcoin::{Stack, new_stack, push, pop, ecdsa_verify, verify_p2pk, op_checksig};
+use bitcoin::{new_stack, push, pop, verify_p2pk};
 
 struct P2PKInputs {
     sig_r: Field,
@@ -19,7 +19,7 @@ fn main(inputs: P2PKInputs) -> pub P2PKOutputs {
     
     verify_p2pk(signature, pubkey, inputs.msg_hash);
     
-    P2PKOutputs { is_valid: true }
+     P2PKOutputs { is_valid: true }    // if we reach here verification passed 
 }
 
 
