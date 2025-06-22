@@ -9,3 +9,7 @@ authors = ["mohammed7s"]
 [dependencies]
 bitcoin = { path = "src/bitcoin" }
 rollup = { path = "src/rollup" }
+
+[[test]]
+name = "test"
+path = "src/test.nr"
