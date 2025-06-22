@@ -29,6 +29,10 @@ The bridge is outside of current scope. However, the bitvm2 bridge is a groth16 
         - User spends the UTXO by proving valid execution of bitcoin script 
         - New UTXO locked to a standard bitcoin public key (any of: P2PKH, P2PK, P2TR..etc.) in shielded state. New UTXO commitment inserted into UTXO tree. 
 
+<div align="center">
+  <img src="shadowBTC.png" alt="ShadowBTC Architecture Diagram" width="600" height="400">
+</div>
+
 ### Specification
 
 Commitment = poseidon (p2pk | randomness )
