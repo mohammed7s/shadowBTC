@@ -33,3 +33,16 @@ The bridge is outside of current scope. However, the bitvm2 bridge is a groth16 
 
 Commitment = poseidon (p2pk | randomness )
 
+
+
+## to run 
+
+1. from root/ 
+```nargo compile``` 
+
+2. ```nargo test```
+
+3. from js/ 
+```yarn test```
+```yarn run-main``` 
+to run main.nr p2pk proof generation. 
