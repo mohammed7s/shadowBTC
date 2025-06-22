@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "src/bitcoin"]
+members = [".", "src/bitcoin", "src/rollup", "src/common"]
 
 [package]
 name = "shadowBTC"
@@ -8,3 +8,4 @@ authors = ["mohammed7s"]
 
 [dependencies]
 bitcoin = { path = "src/bitcoin" }
+rollup = { path = "src/rollup" }
